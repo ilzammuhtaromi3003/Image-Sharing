@@ -102,36 +102,6 @@ async function getPostsByUserId(req, res) {
   }
 }
 
-async function getFeed(req, res) {
-  const userId = req.user.user_id; // Ambil user_id dari req.user karena telah diotorisasi
 
-  try {
-    // Misalnya, Anda memiliki tabel "following" yang menyimpan informasi siapa yang diikuti oleh user
-    const following = await prisma.following.findMany({
-      where: {
-        follower_id: userId, // Cari siapa yang diikuti oleh user dengan user_id tertentu
-      },
-      select: {
-        following_id: true, // Pilih user_id yang diikuti
-      },
-    });
 
-    const followedUserIds = following.map((follow) => follow.following_id);
-
-    // Dapatkan posting dari pengguna yang diikuti
-    const feedPosts = await prisma.post.findMany({
-      where: {
-        user_id: {
-          in: followedUserIds, // Ambil posting dari pengguna yang diikuti
-        },
-      },
-    });
-
-    res.json({ feedPosts });
-  } catch (error) {
-    console.error('Error in getting feed posts:', error);
-    res.status(500).json({ message: 'Failed to get feed posts' });
-  }
-}
-
-module.exports = { uploadImage, getPostById, editPost, deletePost, getPostsByUserId, getFeed };
+module.exports = { uploadImage, getPostById, editPost, deletePost, getPostsByUserId};

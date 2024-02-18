@@ -9,8 +9,7 @@ const {
   getPostById,
   editPost,
   deletePost,
-  getPostsByUserId,
-  getFeed
+  getPostsByUserId
 } = require('../controllers/postController'); 
 
 // Endpoint untuk mengunggah gambar ke server
@@ -29,6 +28,5 @@ router.delete('/:postId/delete', authenticateUser, deletePost);
 router.get('/user/:userId', getPostsByUserId);
 
 // Endpoint untuk mendapatkan umpan gambar dari semua pengguna yang diikuti oleh pengguna tertentu
-router.get('/feed', authenticateUser, getFeed);
 
 module.exports = router;
