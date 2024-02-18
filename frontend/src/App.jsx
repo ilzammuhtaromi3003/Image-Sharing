@@ -10,7 +10,6 @@ const App = () => {
   return (
     <Router>
       <div>
-        <h1>Welcome to My App</h1>
         <Routes>
           <Route path="/" element={<LoginPage />} /> {/* Rute default untuk root path */}
           <Route path="/login" element={<LoginPage />} />

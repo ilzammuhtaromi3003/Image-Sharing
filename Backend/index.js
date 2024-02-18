@@ -11,6 +11,7 @@ const router = require ('./routes/index.js');
 app.use(cors());
 // Middleware
 app.use(express.static(path.join(__dirname, "public")));
+
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));

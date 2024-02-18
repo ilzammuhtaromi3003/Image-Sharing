@@ -1,7 +1,5 @@
 // postController.js
 
-const multer = require('multer');
-const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
@@ -9,7 +7,7 @@ const prisma = new PrismaClient();
 async function uploadImage(req, res) {
   try {
     const user = req.user; // Mengambil informasi user dari middleware authenticateUser
-    const { filename, path: filePath } = req.file;
+    const { filename } = req.file; // Hanya ambil nama file
 
     // Pastikan userId tidak kosong sebelum membuat posting baru
     if (!user) {
@@ -20,10 +18,10 @@ async function uploadImage(req, res) {
 
     const post = await prisma.post.create({
       data: {
-        user: { connect: { user_id: user.user_id } }, // Menghubungkan posting dengan pengguna yang terautentikasi
+        user: { connect: { user_id: user.user_id } },
         description,
-        image: filePath,
-        category: { connect: { category_id: parseInt(category_id) } }, // Menghubungkan posting dengan kategori yang dipilih
+        image: filename, // Simpan hanya nama file
+        category: { connect: { category_id: parseInt(category_id) } },
       },
     });
 
@@ -87,21 +85,49 @@ async function deletePost(req, res) {
   }
 }
 
-async function getPostsByUserId(req, res) {
-  const { userId } = req.params;
+async function getPostsByFullName(req, res) {
+  const { fullName } = req.params;
 
   try {
+    // Dapatkan user berdasarkan full name
+    const user = await prisma.user.findFirst({
+      where: {
+        full_name: fullName,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Dapatkan semua postingan yang dimiliki oleh user dengan user_id tersebut
     const userPosts = await prisma.post.findMany({
-      where: { user_id: parseInt(userId) },
+      where: {
+        user_id: user.user_id,
+      },
     });
 
     res.json({ userPosts });
   } catch (error) {
-    console.error('Error in getting user posts:', error);
-    res.status(500).json({ message: 'Failed to get user posts' });
+    console.error('Error in getting user posts by full name:', error);
+    res.status(500).json({ message: 'Failed to get user posts by full name' });
+  }
+}
+async function getAllPosts(req, res) {
+  try {
+    const allPosts = await prisma.post.findMany({
+      include: {
+        user: true, // Sertakan informasi lengkap tentang pengguna yang membuat posting
+      },
+    });
+
+    res.json({ allPosts });
+  } catch (error) {
+    console.error('Error in getting all posts:', error);
+    res.status(500).json({ message: 'Failed to get all posts' });
   }
 }
 
 
 
-module.exports = { uploadImage, getPostById, editPost, deletePost, getPostsByUserId};
+module.exports = { uploadImage, getPostById, editPost, deletePost, getPostsByFullName, getAllPosts};

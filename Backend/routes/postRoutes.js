@@ -9,7 +9,8 @@ const {
   getPostById,
   editPost,
   deletePost,
-  getPostsByUserId
+  getPostsByFullName,
+  getAllPosts,
 } = require('../controllers/postController'); 
 
 // Endpoint untuk mengunggah gambar ke server
@@ -25,7 +26,9 @@ router.put('/:postId/edit', authenticateUser, editPost); // Pastikan menambahkan
 router.delete('/:postId/delete', authenticateUser, deletePost);
 
 // Endpoint untuk mendapatkan semua gambar yang diunggah oleh pengguna tertentu
-router.get('/user/:userId', getPostsByUserId);
+router.get('/user/fullname/:fullName', getPostsByFullName);
+
+router.get('/', getAllPosts);
 
 // Endpoint untuk mendapatkan umpan gambar dari semua pengguna yang diikuti oleh pengguna tertentu
 

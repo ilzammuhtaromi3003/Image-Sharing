@@ -1,7 +1,7 @@
-// PostingPage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './PostPage.css'; // Import file CSS untuk styling
 
 const PostPage = () => {
   const [posts, setPosts] = useState([]);
@@ -11,8 +11,8 @@ const PostPage = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/post`);
-        setPosts(response.data);
+        const response = await axios.get(`http://localhost:3000/api/post`);
+        setPosts(response.data.allPosts); // Sesuaikan dengan struktur data yang diterima dari server
       } catch (error) {
         setError(error.response.data.message);
       }
@@ -34,14 +34,21 @@ const PostPage = () => {
       <h2>Posts</h2>
       <button onClick={handleLogout}>Logout</button>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      <ul>
+      <div className="post-grid">
         {posts.map((post) => (
-          <li key={post.post_id}>
-            <img src={post.image} alt={post.description} />
-            <p>{post.description}</p>
-          </li>
+          <div key={post.post_id} className="post-card">
+            <div className="post-image-container">
+              <img 
+                src={`http://localhost:3000/images/${post.image}`}  
+                alt={post.description} 
+                className="post-image" />
+            </div>
+            <div className="post-description-container">
+              <p className="post-description">{post.description}</p>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };
