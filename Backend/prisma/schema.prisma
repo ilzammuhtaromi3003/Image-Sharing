@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Definisi model User
+model User {
+  user_id    Int      @id @default(autoincrement())
+  full_name  String
+  username   String    @unique
+  password   String
+  email      String    @unique
+  foto       String?
+  bio        String?
+
+  // Relasi dengan tabel Post (satu User dapat memiliki banyak Post)
+  posts      Post[]   @relation("UserPosts")
+  // Relasi dengan tabel Like (satu User dapat memberikan banyak Like)
+  likes      Like[]   @relation("UserLikes")
+}
+
+// Definisi model Post
+model Post {
+  post_id      Int      @id @default(autoincrement())
+  user_id      Int
+  description  String
+  image        String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  category_id  Int      // Kunci asing untuk kategori
+
+  // Relasi dengan tabel User (satu Post dimiliki oleh satu User)
+  user         User     @relation("UserPosts", fields: [user_id], references: [user_id])
+  // Relasi dengan tabel Like (satu Post dapat memiliki banyak Like)
+  likes        Like[]   @relation("PostLikes")
+  // Relasi dengan tabel Category (satu Post dapat memiliki satu Category)
+  category     Category @relation(fields: [category_id], references: [category_id])
+}
+
+// Definisi model Category
+model Category {
+  category_id  Int      @id @default(autoincrement())
+  category_name         String   @unique
+  posts        Post[]   // Tidak perlu direlasikan kembali ke Post
+}
+
+// Definisi model Like
+model Like {
+  like_id      Int      @id @default(autoincrement())
+  user_id      Int
+  post_id      Int
+
+  // Relasi dengan tabel User (satu Like dimiliki oleh satu User)
+  user         User     @relation("UserLikes", fields: [user_id], references: [user_id])
+  // Relasi dengan tabel Post (satu Like dimiliki oleh satu Post)
+  post         Post     @relation("PostLikes", fields: [post_id], references: [post_id])
+}
