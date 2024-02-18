@@ -30,21 +30,21 @@ const PostPage = () => {
   };
 
   return (
-    <div>
+    <div className="container">
       <h2>Posts</h2>
-      <button onClick={handleLogout}>Logout</button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <div className="post-grid">
+      <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
+      {error && <p className="text-danger">{error}</p>}
+      <div className="row">
         {posts.map((post) => (
-          <div key={post.post_id} className="post-card">
-            <div className="post-image-container">
+          <div key={post.post_id} className="col-md-4 mb-3">
+            <div className="card">
               <img 
                 src={`http://localhost:3000/images/${post.image}`}  
                 alt={post.description} 
-                className="post-image" />
-            </div>
-            <div className="post-description-container">
-              <p className="post-description">{post.description}</p>
+                className="card-img-top" />
+              <div className="card-body">
+                <p className="card-text">{post.description}</p>
+              </div>
             </div>
           </div>
         ))}
