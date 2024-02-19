@@ -6,11 +6,13 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import PostPage from './pages/PostPage';
 import ProfilePage from './pages/ProfilePage';
+import Navbar from './components/Navbar';
 
 const App = () => {
   return (
     <Router>
       <div>
+        {/* <Navbar /> Panggil komponen Navbar di sini */}
         <Routes>
           <Route path="/" element={<LoginPage />} /> {/* Rute default untuk root path */}
           <Route path="/login" element={<LoginPage />} />

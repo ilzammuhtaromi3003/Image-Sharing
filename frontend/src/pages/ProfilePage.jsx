@@ -1,30 +1,32 @@
-// src\pages\ProfilePage.jsx
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Container, Row, Col, Card, ListGroup, Button } from 'react-bootstrap';
+import { Container, Row, Col, Card, ListGroup, Button, Modal, Form } from 'react-bootstrap';
 
 const UserProfilePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [description, setDescription] = useState('');
+  const [image, setImage] = useState(null);
+  const [category, setCategory] = useState('');
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    const token = localStorage.getItem('token'); // Ambil token dari localStorage
+    const token = localStorage.getItem('token');
 
     if (!token) {
-      // Jika token tidak ada, arahkan pengguna ke halaman login
       navigate('/login');
-      return; // Berhenti dan jangan lanjutkan permintaan
+      return;
     }
 
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(`http://localhost:3000/api/user/profile/${id}`, {
           headers: {
-            Authorization: `Bearer ${token}` // Sertakan token dalam header Authorization
+            Authorization: `Bearer ${token}`
           }
         });
         setUser(response.data.user);
@@ -34,15 +36,67 @@ const UserProfilePage = () => {
       }
     };
 
-    if (id) {
-      fetchUserProfile();
-    }
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/category/categories');
+        setCategories(response.data.categories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setError('Gagal mengambil kategori');
+      }
+    };
+
+    fetchUserProfile();
+    fetchCategories();
   }, [id, navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
     navigate('/login');
+  };
+
+  const handleModalClose = () => {
+    setShowModal(false);
+  };
+
+  const handleModalShow = () => {
+    setShowModal(true);
+  };
+
+  const handleDescriptionChange = (event) => {
+    setDescription(event.target.value);
+  };
+
+  const handleImageChange = (event) => {
+    setImage(event.target.files[0]);
+  };
+
+  const handleCategoryChange = (event) => {
+    setCategory(event.target.value);
+  };
+
+  const handleUpload = async () => {
+    const token = localStorage.getItem('token');
+
+    const formData = new FormData();
+    formData.append('image', image);
+    formData.append('description', description);
+    formData.append('category_id', category); // Mengirim ID kategori ke backend
+
+    try {
+      await axios.post('http://localhost:3000/api/post/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      // Refresh halaman setelah mengunggah
+      window.location.reload();
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setError('Gagal mengunggah gambar');
+    }
   };
 
   return (
@@ -70,11 +124,50 @@ const UserProfilePage = () => {
                 </ListGroup.Item>
               ))}
             </ListGroup>
+            <Button variant="primary" onClick={handleModalShow} className="mt-3">
+              Upload Post
+            </Button>
           </Col>
         </Row>
       )}
       <Link to="/posts" className="btn btn-primary mt-3 mr-3">Go to Posts</Link>
       <Button variant="danger" onClick={handleLogout} className="mt-3">Logout</Button>
+
+      {/* Modal */}
+      <Modal show={showModal} onHide={handleModalClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Upload Post</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="formDescription">
+              <Form.Label>Description</Form.Label>
+              <Form.Control type="text" placeholder="Enter description" value={description} onChange={handleDescriptionChange} />
+            </Form.Group>
+            <Form.Group controlId="formImage">
+              <Form.Label>Image</Form.Label>
+              <Form.Control type="file" accept="image/*" onChange={handleImageChange} />
+            </Form.Group>
+            <Form.Group controlId="formCategory">
+              <Form.Label>Category</Form.Label>
+              <Form.Control as="select" value={category} onChange={handleCategoryChange}>
+                <option value="">Select category</option>
+                {categories.map((category) => (
+                  <option key={category.category_id} value={category.category_id}>{category.category_name}</option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleModalClose}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleUpload}>
+            Upload
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };
