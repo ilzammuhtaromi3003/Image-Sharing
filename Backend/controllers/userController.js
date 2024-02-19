@@ -8,24 +8,19 @@ const bcrypt = require("bcrypt");
 async function loginController(req, res) {
   try {
     const { email, password } = req.body;
-
-    // Cari user berdasarkan alamat email
     const user = await prisma.user.findFirst({
       where: { email },
     });
 
-    // Periksa apakah user ditemukan dan password sesuai
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Buat token JWT
     const token = jwt.sign({ userId: user.user_id }, "secret", {
       expiresIn: "1d",
     });
 
-    // Kirim respons dengan token
-    res.status(200).json({ token });
+    res.status(200).json({ token, user_id: user.user_id }); // Mengirimkan user_id sebagai respons
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });

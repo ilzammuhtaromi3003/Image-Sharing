@@ -1,38 +1,57 @@
+// src\pages\PostPage.jsx
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import './PostPage.css'; // Import file CSS untuk styling
+import { useNavigate, Link } from 'react-router-dom';
 
 const PostPage = () => {
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const [userId, setUserId] = useState(null); 
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await axios.get(`http://localhost:3000/api/post`);
-        setPosts(response.data.allPosts); // Sesuaikan dengan struktur data yang diterima dari server
-      } catch (error) {
-        setError(error.response.data.message);
-      }
-    };
+    // Pemeriksaan No. 1: Ambil nilai userId dari localStorage
+    const token = localStorage.getItem('token');
+    const userIdFromLocalStorage = localStorage.getItem('userId');
+    
+    console.log("UserId from localStorage:", userIdFromLocalStorage); // Logging nilai userId
 
-    fetchPosts();
-  }, []);
+    // Pemeriksaan No. 2: Set userId ke dalam state komponen
+    if (token && userIdFromLocalStorage) {
+      console.log("Token and userId are present. Setting userId..."); // Logging pesan untuk menunjukkan bahwa token dan userId ditemukan
+
+      // Pastikan bahwa userId yang diambil dari localStorage sudah dalam format yang diharapkan
+      setUserId(userIdFromLocalStorage);
+      const fetchPosts = async () => {
+        try {
+          const response = await axios.get('http://localhost:3000/api/post', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setPosts(response.data.allPosts);
+        } catch (error) {
+          setError(error.response.data.message || 'Something went wrong.');
+        }
+      };
+      fetchPosts();
+    } else {
+      navigate('/login');
+    }
+  }, [navigate]); 
 
   const handleLogout = () => {
-    // Lakukan proses logout di sini, seperti menghapus token dari local storage atau state aplikasi
-    // Contoh penghapusan token dari local storage:
-    localStorage.removeItem('token');
-    // Redirect ke halaman login setelah logout berhasil
-    navigate('/login');
+    localStorage.removeItem('token'); 
+    localStorage.removeItem('userId'); 
+    navigate('/login'); 
   };
 
   return (
     <div className="container">
       <h2>Posts</h2>
       <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
+      {userId && <Link to={`/profile/${userId}`} className="btn btn-primary">Profile</Link>}
       {error && <p className="text-danger">{error}</p>}
       <div className="row">
         {posts.map((post) => (

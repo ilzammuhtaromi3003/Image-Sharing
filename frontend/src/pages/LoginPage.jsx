@@ -16,9 +16,11 @@ const LoginPage = () => {
         email,
         password
       });
-      const token = response.data.token;
+      const { token, user_id } = response.data; // Mendapatkan token dan user_id dari respons
       console.log('Token:', token);
-      // Navigasi ke halaman posts setelah login berhasil
+      console.log('UserId:', user_id);
+      localStorage.setItem('token', token);
+      localStorage.setItem('userId', user_id); // Menyimpan user_id di local storage
       navigate('/posts');
     } catch (error) {
       if (error.response && error.response.data) {
